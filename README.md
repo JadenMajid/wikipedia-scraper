@@ -10,7 +10,6 @@ WikiScrape runs off a multithreaded tokio runtime with non blocking threads and 
 
 - Multithreading
 - Async execution
-- 
 
 ## Structure
 The main thread spawns tokio child tasks which check if the query requested resource already exists.
@@ -22,8 +21,10 @@ If the resource already exists, the thread returns early. If not, a web request 
 ## Todo
 - [x] page GET
 - [x] resource extraction from downloaded pages
-- [ ] async execution
-- [ ] multithreading
+- [x] async execution
+- [x] multithreading
 - [ ] unit testing
     - [x] string processing
     - [ ] multithreaded runtime
+- [ ] integration testing
+    - inherently non deterministic due to random thread wait times
