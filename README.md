@@ -4,6 +4,7 @@ WikiScrape is a web scraper that crawls linked wikipedia resources from pages.
 
 WikiScrape runs off a multithreaded tokio runtime with non blocking threads and execution.
 
+<img src="images/example_output.png"></img>
 
 ## Features
 
