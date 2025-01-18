@@ -44,7 +44,7 @@ pub(crate) async fn write_links(resource: &str) -> Result<(), Box<dyn std::error
         return Ok(());
     }
 
-    let mut resp = get_links_from_url(&get_url_from_resource(resource)).await?;
+    let mut response = get_links_from_url(&get_url_from_resource(resource)).await?;
 
     println!("info: trying to create file {}", resource);
     let mut f = match File::create_new(&filepath).await {
@@ -65,11 +65,10 @@ pub(crate) async fn write_links(resource: &str) -> Result<(), Box<dyn std::error
         },
     };
 
-    resp.sort();
-    resp.dedup();
+    response.sort();
+    response.dedup();
 
-    for s in resp {
-        // println!("{}",s);
+    for s in response {
         f.write_all(s.as_bytes()).await?;
         f.write_all(b"\n").await?;
     }

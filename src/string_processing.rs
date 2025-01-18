@@ -36,6 +36,7 @@ pub fn links_helper(haystack: &str) -> Vec<String> {
                 .replace("[[", "")
                 .replace("]]", "")
         })
+        .filter(|s| !s.starts_with("File:"))
         .collect()
 }
 
@@ -79,11 +80,11 @@ mod tests {
            ," ".to_string()
         ]));
 
-        let result = links_helper("[[test]] [[ ]] [[ | ]]");
+        // should not take files, and should not take second half of [[first|second]]
+        let result = links_helper("[[test]] [[File:something.jpg]] [[ | ]]");
 
         assert_eq!(result, Vec::<String>::from([
             "test".to_string()
-           ," ".to_string()
            ," ".to_string()
         ]));
     }
