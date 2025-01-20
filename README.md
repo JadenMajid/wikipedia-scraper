@@ -6,10 +6,11 @@ WikiScrape runs off a multithreaded tokio runtime with non blocking threads and 
 
 <img src="images/test_run.png"></img>
 
-## Features
+## Fun things
 
 - Multithreading
 - Async execution
+- Starts from a random wikipedia page when run without a starting page as an arg
 
 ## Structure
 <img src = "images/file tree.png"></img>
