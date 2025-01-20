@@ -42,7 +42,7 @@ pub fn links_helper(haystack: &str) -> Vec<String> {
 
 
 #[cfg(test)]
-mod tests {
+mod string_processing_tests {
     use super::*;
 
     #[tokio::test]

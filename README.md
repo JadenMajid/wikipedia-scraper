@@ -23,8 +23,8 @@ If the resource already exists, the thread returns early. If not, a web request 
 - [x] resource extraction from downloaded pages
 - [x] async execution
 - [x] multithreading
-- [ ] unit testing
+- [x] unit testing
     - [x] string processing
-    - [ ] multithreaded runtime
+    - [x] single thread evaluation
 - [ ] integration testing
     - inherently non deterministic due to random thread wait times
