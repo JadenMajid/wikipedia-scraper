@@ -87,17 +87,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let origin_resource;
     match get_args() {
         Ok(i) => (random_wait_ms, origin_resource) = i,
-        Err(_) => {
-            println!("exiting program");
+        Err(e) => {
+            println!("exiting program: {}", e);
             return Ok(());
         }
     };
-    // match ARGS.get(1) {
-    //     Some(s) => origin_resource= s,
-    //     None => {origin_resource= "special:random"},
-    // };
 
-    //
     match try_exists("data/").await {
         Ok(true) => {}
         Ok(false) => {
