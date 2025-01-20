@@ -1,42 +1,83 @@
 use once_cell::sync::Lazy;
 use rand::Rng;
 use std::{
-    env::args, num::ParseIntError, sync::{Arc, Mutex}
+    env::args,
+    io::Error,
+    num::ParseIntError,
+    sync::{Arc, Mutex},
 };
-use tokio::{fs::{create_dir, try_exists}, task::JoinSet};
+use tokio::{
+    fs::{create_dir, try_exists},
+    task::JoinSet,
+};
 
-mod web_data_processing;
 mod crawler;
+mod web_data_processing;
 
-fn get_args()->Result<(u64, String),ParseIntError>{
+const WARNING_MESSAGE : &str = "warning: You inputted a thread random wait time less than 5s\nif this wait time is too low, you may be IP blocked by wikipedia\ncontinue?[y/n]";
 
+fn get_args() -> Result<(u64, String), Box<dyn std::error::Error>> {
     static ARGS: Lazy<Vec<String>> = Lazy::new(|| args().into_iter().collect());
-    let mut random_wait_ms:u64 = 10000;
+    let mut random_wait_ms: u64 = 10000;
     let mut origin_resource = "special:random";
 
     // ARGS[0] = binary path, should skip when parsing args
     match ARGS.len() {
-        0=>{}
-        1=>{},
-        2=>{
-            match ARGS[1].parse::<u64>(){
-                Ok(i) => random_wait_ms = i,
+        0 => {}
+        1 => {}
+        2 => {
+            match ARGS[1].parse::<u64>() {
+                Ok(i) => {
+                    if i < 5000 {
+                        let mut line = String::new();
+                        println!("{}", WARNING_MESSAGE);
+                        std::io::stdin().read_line(&mut line).unwrap();
+                        match line.as_str() {
+                            "y" => {}
+                            _ => return Err(Box::new(std::fmt::Error)),
+                        };
+                    }
+                    random_wait_ms = i
+                }
                 Err(_) => origin_resource = &ARGS[1],
             };
-        },
-        _2_plus=>{
-            match ARGS[1].parse::<u64>(){
-                Ok(i) => {random_wait_ms = i; origin_resource=&ARGS[2]},
-                Err(_) => {origin_resource = &ARGS[1]; random_wait_ms = match ARGS[2].parse::<u64>(){
-                    Ok(i)=>i,
-                    Err(e)=>{return Err(e)}
+        }
+        _2_plus => match ARGS[1].parse::<u64>() {
+            Ok(i) => {
+                if i < 5000 {
+                    let mut line = String::new();
+                    println!("{}", WARNING_MESSAGE);
+                    std::io::stdin().read_line(&mut line).unwrap();
+                    match line.as_str() {
+                        "y" => {}
+                        _ => return Err(Box::new(std::fmt::Error)),
                     };
                 }
+                random_wait_ms = i;
+                origin_resource = &ARGS[2]
             }
-        }
+            Err(_) => {
+                origin_resource = &ARGS[1];
+                random_wait_ms = match ARGS[2].parse::<u64>() {
+                    Ok(i) => {
+                        if i < 5000 {
+                            let mut line = String::new();
+                            println!("{}", WARNING_MESSAGE);
+                            std::io::stdin().read_line(&mut line).unwrap();
+                            match line.as_str() {
+                                "y" => {}
+                                _ => return Err(Box::new(std::fmt::Error)),
+                            };
+                        }
+                        i
+                    }
+                    Err(e) => return Err(Box::new(e)),
+                };
+            }
+        },
     };
-    
-    return Ok((random_wait_ms, origin_resource.to_string()))
+
+    return Ok((random_wait_ms, origin_resource.to_string()));
 }
 
 #[tokio::main]
@@ -44,23 +85,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // handle args
     let random_wait_ms;
     let origin_resource;
-    match get_args(){
-        Ok(i)=>{(random_wait_ms, origin_resource) = i}
-        Err(e)=>{println!("There was an error parsing your args: {}", e);return Ok(())}
-    }; 
+    match get_args() {
+        Ok(i) => (random_wait_ms, origin_resource) = i,
+        Err(_) => {
+            println!("exiting program");
+            return Ok(());
+        }
+    };
     // match ARGS.get(1) {
     //     Some(s) => origin_resource= s,
     //     None => {origin_resource= "special:random"},
     // };
 
-    // 
-    match try_exists("data/").await{
-        Ok(true)=>{},
-        Ok(false)=>{match create_dir("data/").await{
-            Ok(_)=>{},
-            Err(e)=>{println!("There was an error creating 'data/': {}", e); return Ok(())}
-        };},
-        Err(e)=>{println!("There was an error checking if 'data/' exists: {}", e);return Ok(())}
+    //
+    match try_exists("data/").await {
+        Ok(true) => {}
+        Ok(false) => {
+            match create_dir("data/").await {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("There was an error creating 'data/': {}", e);
+                    return Ok(());
+                }
+            };
+        }
+        Err(e) => {
+            println!("There was an error checking if 'data/' exists: {}", e);
+            return Ok(());
+        }
     };
 
     println!("info: starting from {}", origin_resource);
@@ -70,7 +122,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .expect("Origin resource");
 
-    let stack_arc_mutex: Arc<Mutex<Vec<Vec<String>>>> = Arc::new(Mutex::new(Vec::from([resources])));
+    let stack_arc_mutex: Arc<Mutex<Vec<Vec<String>>>> =
+        Arc::new(Mutex::new(Vec::from([resources])));
 
     let mut rng = rand::thread_rng();
     let mut set = JoinSet::new();
@@ -89,7 +142,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .map(|s| (rng.gen_range(0..random_wait_ms), s))
                 {
                     let stack_arc_mutex_clone = stack_arc_mutex.clone();
-                    println!("info: spawning thread for {}, waiting {} ms", resource.1, resource.0);
+                    println!(
+                        "info: spawning thread for {}, waiting {} ms",
+                        resource.1, resource.0
+                    );
                     set.spawn(async move {
                         crawler::crawler_thread(&stack_arc_mutex_clone, resource).await;
                     });
@@ -103,7 +159,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // Await completed tasks and potentially add new ones
-        while let Some(result) = set.join_next().await  {
+        while let Some(result) = set.join_next().await {
             match result {
                 Ok(_) => {
                     // Successfully completed a task
@@ -113,10 +169,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         }
-
     }
     Ok(())
 }
-
-
-
