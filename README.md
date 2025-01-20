@@ -4,7 +4,7 @@ WikiScrape is a web scraper that crawls linked wikipedia resources from pages.
 
 WikiScrape runs off a multithreaded tokio runtime with non blocking threads and execution.
 
-<img src="images/example_output.png"></img>
+<img src="images/test_run.png"></img>
 
 ## Features
 
@@ -12,6 +12,13 @@ WikiScrape runs off a multithreaded tokio runtime with non blocking threads and 
 - Async execution
 
 ## Structure
+<img src = "images/file tree.png"></img>
+
+Code features are modularized by function. 
+- web_processing.rs: all of web requests & processing
+- crawler.rs: all code required to spawn a single crawler
+- main.rs: all code required to spawn multiple crawlers, looping the output of others into the input of new crawlers
+
 The main thread spawns tokio child tasks which check if the query requested resource already exists.
 If the resource already exists, the thread returns early. If not, a web request is made and the linked resources are put into a file.
 

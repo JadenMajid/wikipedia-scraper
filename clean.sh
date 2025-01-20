@@ -1,1 +1,2 @@
 rm data/*
+clear

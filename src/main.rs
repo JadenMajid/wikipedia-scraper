@@ -6,7 +6,7 @@ use std::{
 };
 use tokio::task::JoinSet;
 
-mod string_processing;
+mod web_data_processing;
 mod crawler;
 
 

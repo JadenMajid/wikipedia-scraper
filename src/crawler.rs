@@ -1,8 +1,8 @@
-use crate::string_processing;
+use crate::web_data_processing;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::time::Duration;
-use string_processing::get_links_from_url;
+use web_data_processing::get_links_from_url;
 use tokio::fs::File;
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncReadExt;
@@ -23,7 +23,7 @@ pub(crate) async fn crawler_thread<'a>(
     resource: (u64, String),
 ) {
     sleep(Duration::from_millis(resource.0)).await;
-    println!("info: trying {}", resource.1);
+    println!("info: fetching {}", resource.1);
     let _ = write_links(&resource.1).await;
 
     match get_linked_resources_from_resource(&resource.1).await {
@@ -70,9 +70,9 @@ pub(crate) async fn write_links(resource: &str) -> Result<(), Box<dyn std::error
         return Ok(());
     }
 
-    let mut response = get_links_from_url(&get_url_from_resource(resource)).await?;
+    let (returned_resource, mut response) = get_links_from_url(&get_url_from_resource(resource)).await?;
 
-    println!("info: trying to create file {}", resource);
+    println!("info: trying to create file {}", returned_resource);
     let mut f = match File::create_new(&filepath).await {
         Ok(f) => f,
         Err(e) => match e.kind() {
@@ -102,6 +102,12 @@ pub(crate) async fn write_links(resource: &str) -> Result<(), Box<dyn std::error
         f.write_all(s.as_bytes()).await?;
         f.write_all(b"\n").await?;
     }
+
+    println!("info: created {}({:1})", returned_resource, match f.metadata().await {
+        Ok(m) => format!("{:.2}KB", m.len() as f32/1024.0),
+        Err(_) => "?".to_string(),
+    });
+
     Ok(())
 }
 
