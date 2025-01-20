@@ -1,4 +1,2 @@
-./clean.sh
-cargo build --release
-cargo test --release
+./buildtest.sh
 cargo run --release "testing" 4999 

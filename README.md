@@ -13,7 +13,7 @@ WikiScrape runs off a multithreaded tokio runtime with non blocking threads and 
 - Starts from a random wikipedia page when run without a starting page as an arg
 
 ## Structure
-<img src = "images/file tree.png"></img>
+<img src = "images/file_tree.png"></img>
 
 Code features are modularized by function. 
 - web_processing.rs: all of web requests & processing
