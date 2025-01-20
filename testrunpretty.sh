@@ -1,4 +1,4 @@
 ./clean.sh
 cargo build --release
 cargo test --release
-cargo run --release "testing" 5000
+cargo run --release "ACE_Encrypt" 10000

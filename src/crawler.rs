@@ -72,7 +72,6 @@ pub(crate) async fn write_links(resource: &str) -> Result<(), Box<dyn std::error
 
     let (returned_resource, mut response) = get_links_from_url(&get_url_from_resource(resource)).await?;
 
-    println!("info: trying to create file {}", returned_resource);
     let mut f = match File::create_new(&filepath).await {
         Ok(f) => f,
         Err(e) => match e.kind() {
