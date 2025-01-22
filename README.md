@@ -1,6 +1,6 @@
 # WikiScrape
 
-WikiScrape is a web scraper that crawls linked wikipedia resources from pages.
+WikiScrape is a program that scrapes links from wikipedia pages in order to build a graph of its interconnectedness.
 
 WikiScrape runs off a multithreaded tokio runtime with non blocking threads and execution.
 
@@ -29,8 +29,10 @@ If the resource already exists, the thread returns early. If not, a web request 
 - [x] resource extraction from downloaded pages
 - [x] async execution
 - [x] multithreading
+- [ ] graph generation
 - [x] unit testing
     - [x] string processing
     - [x] single thread evaluation
-- [ ] integration testing
+    - [ ] graph generation
+- [ ] data collection integration testing
     - inherently non deterministic due to random thread wait times
